@@ -164,6 +164,7 @@ class ChannelGame:
     def __init__(self, game=None):
         self.game = game 
         self.channel = None
+        self.channel_id = None
         self.history = []
         self.agg = Aggregate()
 
@@ -175,7 +176,7 @@ class ChannelGame:
             "game": game_dt,
             "history": self.history,
             "agg": self.agg.to_dict(),
-            "channel_id": self.channel.id
+            "channel_id": self.channel_id 
         }
 
     @classmethod
@@ -195,7 +196,12 @@ class ChannelGame:
     async def set_channel(self, channel_id):
         if self.channel is not None:
             return
-        self.channel = await client.fetch_channel(channel_id)
+        try:
+            self.channel = await client.fetch_channel(channel_id)
+        except:
+            self.channel = None
+
+        self.channel_id = channel_id
 
     async def guess(self, message, author):
         result = self.game.guess(message)
