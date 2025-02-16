@@ -16,8 +16,7 @@ valid_words_list = list(valid_words_set)
 allowed_words_set = {i.strip().lower() for i in open('words_alpha.txt', 'r').readlines()}
 common_words_set = {i.strip().lower() for i in open('common_words.txt', 'r').readlines()}
 
-BOT_TOKEN = 'MTMzOTA4NDQxMjUyODIzNDUxOQ.Gw85FW.27FKCJJVA111kzBg2qJWAmPti4JRjj5DOCbPN0'
-#'OTkzNzcyMTg4OTI4ODM1Njk0.GvZKj8.GioTTeyP5suLnUyx9_zk88Pe3TjfIS5McsJVco'
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 async def delay_wrapper(delay, coro):
     await asyncio.sleep(delay)
