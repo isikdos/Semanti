@@ -216,6 +216,7 @@ class ChannelGame:
         top5000 = self.game.top5000
         guesses = self.game.guesses
         best = [top5000.get(w) for w in guesses]
+        best = [i for i in best if i]
         best.sort(key=lambda x : x.idx)
         msges = ["Top words:"]
         for i, ws in enumerate(best):
