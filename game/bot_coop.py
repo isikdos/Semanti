@@ -218,17 +218,31 @@ class ChannelGame:
         best = [top5000.get(w) for w in guesses]
         best = [i for i in best if i]
         best.sort(key=lambda x : x.idx)
-        msges = ["Top words:"]
+
+        top_words = []
         for i, ws in enumerate(best):
-            msges.append(ws.format())
+            top_words.append(ws.format())
             if i >= 20:
                 break
-        await self.channel.send("\n".join(msges))
+
+        embed = disnake.Embed(
+            title="Top Words",
+            description="\n".join(ws.format() for ws in top_words),
+            color=disnake.Color.random(),
+        )
+
+        await self.channel.send(embed=embed)
+        # await self.channel.send("\n".join(msges))
 
     async def aggregate(self):
         await self.channel.send(self.agg.to_string())
 
     async def provide_history(self):
+        embed = disnake.Embed(
+            title="History",
+            color=disnake.Color.random(),
+        )
+
         while len(self.history) > 7:
             del self.history[0]
         msgs = []
@@ -239,7 +253,9 @@ class ChannelGame:
             if author:
                 msg = f'Winner: {author}\n{msg}'
             msgs.append(msg)
-        await self.channel.send('\n-----\n'.join(msgs))
+            embed.add_field("", msg)
+        # await self.channel.send('\n-----\n'.join(msgs))
+        await self.channel.send(embed=embed)
 
     async def start_game(self, message_string):
         if self.game:
@@ -252,10 +268,16 @@ class ChannelGame:
                 word = None
 
             self.game = Game()
+
             response = self.game.initialize(word=word)
             # add the initial game information
-            await self.channel.send(response)
+            # await self.channel.send(response)
+            embed = disnake.Embed(
+                description=response,
+                color=disnake.Color.random(),
+            )
 
+            await self.channel.send(embed=embed)
 
     async def end_game(self, author, won=False):
         this_secret = self.game.secret
@@ -284,7 +306,16 @@ class ChannelGame:
         for ws in words:
             phrases.append(ws.format())
         phrases.append(self.get_stats())
-        await self.channel.send("\n".join(phrases))
+        # await self.channel.send("\n".join(phrases))
+
+        embed = disnake.Embed(
+            title=phrases[0],
+            description="\n".join(phrases[1:]),
+            color=disnake.Color.random(),
+        )
+
+        await self.channel.send(embed=embed)
+
         self.game = None
 
 
@@ -293,8 +324,18 @@ class ChannelGame:
         await self.channel.send(stats)
 
     async def help(self):
-        helpstr = 'Commands:\n - $start | Start a new game if there isn\'t one being played\n - $top   | Show your best guesses\n - $end   | Give up and lose\n - $stats | Show the current game stats\n - $hist  | Show the last 20 games\' information\n - $agg   | Summarize the entire history'
-        await self.channel.send(helpstr)
+        embed = disnake.Embed(
+            title="Commands",
+            color=disnake.Color.random(),
+        )
+        embed.add_field("$start", "Start a new game if there isn\'t one being played")
+        embed.add_field("$top", "Show your best guesses")
+        embed.add_field("$end", "Give up and lose")
+        embed.add_field("$stats", "Show the current game stats")
+        embed.add_field("$hist", "Show the last 20 games\' information")
+        embed.add_field("$agg", "Summarize the entire history'")
+        await self.channel.send(embed=embed)
+        # await self.channel.send(helpstr)
 
     def get_stats(self):
         stats = self.game.stats()
