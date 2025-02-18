@@ -227,7 +227,7 @@ class ChannelGame:
 
         embed = disnake.Embed(
             title="Top Words",
-            description="\n".join(ws.format() for ws in top_words),
+            description="\n".join(top_words),
             color=disnake.Color.random(),
         )
 
