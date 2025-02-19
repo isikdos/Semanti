@@ -253,7 +253,7 @@ class ChannelGame:
             color=disnake.Color.random(),
         )
 
-        while len(self.history) > 7:
+        while len(self.history) > 9:
             del self.history[0]
         msgs = []
         for h in self.history:
