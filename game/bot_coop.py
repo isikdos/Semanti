@@ -22,6 +22,8 @@ async def delay_wrapper(delay, coro):
     await asyncio.sleep(delay)
     return await coro
 
+
+
 class WordScore:
     def __init__(self, idx, score, word):
         self.word = word
@@ -34,11 +36,11 @@ class WordScore:
     def format_find(self):
         return f'`{self.word}` found! #{self.idx+2} ({self.score:.1f})'
 
-
 class Game:
     def __init__(self):
         self.secret = None
         self.guesses = set()
+        self.word_guesser_map = dict()
         self.all_guesses = set()
         self.top5000 = dict()
         self.start_time = None
@@ -75,7 +77,7 @@ class Game:
             "time": time.days * 86400 + time.seconds
         }
 
-    def guess(self, message):
+    def guess(self, message, author):
         word = message.lower().strip()
         datum = self.top5000.get(word, None)
         if word == self.secret:
@@ -85,6 +87,8 @@ class Game:
             return True
         elif datum:
             self.guesses.add(word)
+            if word not in self.word_guesser_map:
+                self.word_guesser_map[word] = author
             self.all_guesses.add(word)
             return datum
         elif word in allowed_words_set:
@@ -204,7 +208,7 @@ class ChannelGame:
         self.channel_id = channel_id
 
     async def guess(self, message, author):
-        result = self.game.guess(message)
+        result = self.game.guess(message, author)
         if result is True:
             await self.end_game(won=True, author=author)
         elif result is None:
@@ -219,15 +223,21 @@ class ChannelGame:
         best = [i for i in best if i]
         best.sort(key=lambda x : x.idx)
 
-        top_words = []
-        for i, ws in enumerate(best):
-            top_words.append(ws.format())
-            if i >= 20:
-                break
+        top_words = [
+            (ws.word, ws.idx, ws.score, self.game.word_guesser_map.get(ws.word, ""))
+            for ws in best[0:min(20, len(best))]
+        ]
+        word_len = max(*[len(w[0]) for w in top_words], 4)
+        guesser_len = max(*[len(w[3]) for w in top_words], 6)
+
+
+        desc = f"`{'Word':^{word_len}} | Rank | Score | {'Found':^{guesser_len}}`"
+        for word, idx, score, guesser in top_words:
+            desc += f"\n`{word:<{word_len}} | {idx:4} | {score:5.1f} | {guesser:{guesser_len}}`"
 
         embed = disnake.Embed(
             title="Top Words",
-            description="\n".join(top_words),
+            description=desc,
             color=disnake.Color.random(),
         )
 
@@ -360,13 +370,13 @@ def get_duration_string(seconds):
 
     duration_string = ''
     if seconds:
-        duration_string = f' {seconds} seconds'
+        duration_string = f' {seconds}s'
     if minutes:
-        duration_string = f' {minutes} minutes{duration_string}'
+        duration_string = f' {minutes}m{duration_string}'
     if hours:
-        duration_string = f' {hours} hours{duration_string}'
+        duration_string = f' {hours}h{duration_string}'
     if days:
-        duration_string = f' {days} days{duration_string}'
+        duration_string = f' {days}d{duration_string}'
     duration_string = duration_string.strip()
     return duration_string
 
