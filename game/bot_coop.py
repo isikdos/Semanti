@@ -233,7 +233,7 @@ class ChannelGame:
 
         desc = f"`{'Word':^{word_len}} | Rank | Score`"# | {'Found':^{guesser_len}}`"
         for word, idx, score, guesser in top_words:
-            desc += f"\n`{word:<{word_len}} | {idx:4} | {score:5.1f}`"# | {guesser:{guesser_len}}`"
+            desc += f"\n`{word:<{word_len}} | {idx+2:4} | {score:5.1f}`"# | {guesser:{guesser_len}}`"
 
         embed = disnake.Embed(
             title="Top Words",
